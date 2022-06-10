@@ -1,0 +1,236 @@
+!     #########
+      SUBROUTINE ALLOC_TRIP_DIAG (TPDG,KLON,KLAT,KLAKE_NUM)
+!     #######################################################################
+!
+!!****  *ALLOC_TRIP_DIAG*
+!!
+!!    PURPOSE
+!!    -------
+!
+!     Define the name and unit of each trip output variable.
+!
+!!    REFERENCE
+!!    ---------
+!!
+!!    AUTHOR
+!!    ------
+!!      B. Decharme
+!!
+!!    MODIFICATIONS
+!!    -------------
+!!      Original    01/2017
+!       S. Munier   06/2020 : add lake
+!-------------------------------------------------------------------------------
+!
+!*       0.     DECLARATIONS
+!               ------------
+!
+!
+!
+USE MODD_TRIP_DIAG, ONLY : TRIP_DIAG_t
+!
+USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK
+USE PARKIND1  ,ONLY : JPRB
+!
+IMPLICIT NONE
+!
+!
+!*      0.1    declarations of arguments
+!
+TYPE(TRIP_DIAG_t), INTENT(INOUT) :: TPDG
+!
+INTEGER, INTENT(IN)          :: KLON, KLAT, KLAKE_NUM
+!
+!*      0.2    declarations of output variables
+!
+REAL(KIND=JPRB) :: ZHOOK_HANDLE
+!
+!-------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+!
+IF (LHOOK) CALL DR_HOOK('ALLOC_TRIP_DIAG',0,ZHOOK_HANDLE)
+!
+! * Allocate and initialyse diagnostic variables
+!
+CALL ALLOC_DIAG(TPDG%TDIAG)
+!
+! * Allocate and initialyse run mean diagnostic variables
+!
+CALL ALLOC_DIAG(TPDG%TDIAG_RUN)
+!
+IF (LHOOK) CALL DR_HOOK('ALLOC_TRIP_DIAG',1,ZHOOK_HANDLE)
+!
+!-------------------------------------------------------------------------------
+ CONTAINS
+!-------------------------------------------------------------------------------
+!
+SUBROUTINE ALLOC_DIAG(TPDIAG)
+!
+USE MODN_TRIP,       ONLY : CGROUNDW, CVIT, LFLOOD, CLAKE
+USE MODN_TRIP_RUN,   ONLY : LDIAG_MISC
+USE MODD_TRIP_OASIS, ONLY : LCPL_LAND, LCPL_FLOOD
+!
+USE MODD_TYPE_DIAG
+!
+IMPLICIT NONE
+!
+TYPE(DIAG) :: TPDIAG
+!
+REAL(KIND=JPRB) :: ZHOOK_HANDLE
+!
+IF (LHOOK) CALL DR_HOOK('ALLOC_TRIP_DIAG:ALLOC_DIAG',0,ZHOOK_HANDLE)
+!
+ALLOCATE(TPDIAG%XSURF_STO(KLON,KLAT))
+ALLOCATE(TPDIAG%XQDIS    (KLON,KLAT))
+TPDIAG%XSURF_STO(:,:) = 0.0
+TPDIAG%XQDIS    (:,:) = 0.0
+!
+IF(LDIAG_MISC)THEN
+  ALLOCATE(TPDIAG%XQIN     (KLON,KLAT))
+  TPDIAG%XQIN      (:,:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XQIN(0,0))
+ENDIF
+!
+IF(LCPL_LAND.AND.LDIAG_MISC)THEN
+  ALLOCATE(TPDIAG%XRUNOFF(KLON,KLAT))
+  ALLOCATE(TPDIAG%XDRAIN (KLON,KLAT))
+  TPDIAG%XRUNOFF(:,:) = 0.0
+  TPDIAG%XDRAIN (:,:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XRUNOFF(0,0))
+  ALLOCATE(TPDIAG%XDRAIN (0,0))
+ENDIF
+!
+IF(CGROUNDW/='DEF')THEN
+  ALLOCATE(TPDIAG%XGROUND_STO (KLON,KLAT))
+  ALLOCATE(TPDIAG%XQGF        (KLON,KLAT))
+  TPDIAG%XGROUND_STO (:,:) = 0.0
+  TPDIAG%XQGF        (:,:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XGROUND_STO(0,0))
+  ALLOCATE(TPDIAG%XQGF       (0,0))
+ENDIF
+!
+IF(CGROUNDW=='DIF')THEN
+!
+  ALLOCATE(TPDIAG%XHGROUND(KLON,KLAT))
+  ALLOCATE(TPDIAG%XFWTD   (KLON,KLAT))
+  ALLOCATE(TPDIAG%XWTD    (KLON,KLAT))
+  TPDIAG%XHGROUND(:,:) = 0.0
+  TPDIAG%XFWTD   (:,:) = 0.0
+  TPDIAG%XWTD    (:,:) = 0.0
+!
+  IF(LDIAG_MISC)THEN
+    ALLOCATE(TPDIAG%XQGCELL (KLON,KLAT))
+    ALLOCATE(TPDIAG%XHGHS   (KLON,KLAT))
+    TPDIAG%XQGCELL (:,:) = 0.0
+    TPDIAG%XHGHS   (:,:) = 0.0
+  ELSE
+    ALLOCATE(TPDIAG%XQGCELL (0,0))
+    ALLOCATE(TPDIAG%XHGHS   (0,0))
+  ENDIF
+!
+ELSE
+  ALLOCATE(TPDIAG%XFWTD   (0,0))
+  ALLOCATE(TPDIAG%XWTD    (0,0))
+  ALLOCATE(TPDIAG%XHGROUND(0,0))
+  ALLOCATE(TPDIAG%XQGCELL (0,0))
+  ALLOCATE(TPDIAG%XHGHS   (0,0))
+ENDIF
+!
+!
+!
+IF(CVIT=='VAR')THEN
+  ALLOCATE(TPDIAG%XVEL(KLON,KLAT))
+  TPDIAG%XVEL(:,:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XVEL(0,0))
+ENDIF
+!
+IF(CVIT=='VAR'.OR.CLAKE=='MLK')THEN
+  ALLOCATE(TPDIAG%XHS (KLON,KLAT))
+  TPDIAG%XHS (:,:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XHS (0,0))
+ENDIF
+!
+!
+!
+IF ((LFLOOD.OR.LCPL_FLOOD).AND.LDIAG_MISC) THEN
+   ALLOCATE(TPDIAG%XSOURCE(KLON,KLAT))
+   TPDIAG%XSOURCE(:,:) = 0.0
+ELSE
+   ALLOCATE(TPDIAG%XSOURCE(0,0))
+ENDIF
+!
+!
+!
+IF(LFLOOD)THEN
+  ALLOCATE(TPDIAG%XFLOOD_STO (KLON,KLAT))
+  ALLOCATE(TPDIAG%XFF        (KLON,KLAT))
+  ALLOCATE(TPDIAG%XHF        (KLON,KLAT))
+  TPDIAG%XFLOOD_STO (:,:) = 0.0
+  TPDIAG%XFF        (:,:) = 0.0
+  TPDIAG%XHF        (:,:) = 0.0
+  IF(LDIAG_MISC)THEN
+    ALLOCATE(TPDIAG%XQFR   (KLON,KLAT))
+    ALLOCATE(TPDIAG%XQRF   (KLON,KLAT))
+    ALLOCATE(TPDIAG%XVFIN  (KLON,KLAT))
+    ALLOCATE(TPDIAG%XVFOUT (KLON,KLAT))
+    ALLOCATE(TPDIAG%XWF    (KLON,KLAT))
+    ALLOCATE(TPDIAG%XLF    (KLON,KLAT))
+    ALLOCATE(TPDIAG%XHSF   (KLON,KLAT))
+    TPDIAG%XQFR   (:,:) = 0.0
+    TPDIAG%XQRF   (:,:) = 0.0
+    TPDIAG%XVFIN  (:,:) = 0.0
+    TPDIAG%XVFOUT (:,:) = 0.0
+    TPDIAG%XWF    (:,:) = 0.0
+    TPDIAG%XLF    (:,:) = 0.0
+    TPDIAG%XHSF   (:,:) = 0.0
+  ELSE
+    ALLOCATE(TPDIAG%XQFR   (0,0))
+    ALLOCATE(TPDIAG%XQRF   (0,0))
+    ALLOCATE(TPDIAG%XVFIN  (0,0))
+    ALLOCATE(TPDIAG%XVFOUT (0,0))
+    ALLOCATE(TPDIAG%XWF    (0,0))
+    ALLOCATE(TPDIAG%XLF    (0,0))
+    ALLOCATE(TPDIAG%XHSF   (0,0))
+  ENDIF
+ELSE
+  ALLOCATE(TPDIAG%XFLOOD_STO (0,0))
+  ALLOCATE(TPDIAG%XHF        (0,0))
+  ALLOCATE(TPDIAG%XFF        (0,0))
+  ALLOCATE(TPDIAG%XQFR       (0,0))
+  ALLOCATE(TPDIAG%XQRF       (0,0))
+  ALLOCATE(TPDIAG%XVFIN      (0,0))
+  ALLOCATE(TPDIAG%XVFOUT     (0,0))
+  ALLOCATE(TPDIAG%XWF        (0,0))
+  ALLOCATE(TPDIAG%XLF        (0,0))
+  ALLOCATE(TPDIAG%XHSF       (0,0))
+ENDIF
+!
+!
+!
+IF(CLAKE=='MLK')THEN
+  ALLOCATE(TPDIAG%XLAKE_STO(KLAKE_NUM))
+  ALLOCATE(TPDIAG%XLAKE_OUT(KLAKE_NUM))
+  ALLOCATE(TPDIAG%XLAKE_IN (KLAKE_NUM))
+  ALLOCATE(TPDIAG%XLAKE_H  (KLAKE_NUM))
+  TPDIAG%XLAKE_STO(:) = 0.0
+  TPDIAG%XLAKE_OUT(:) = 0.0
+  TPDIAG%XLAKE_IN (:) = 0.0
+  TPDIAG%XLAKE_H  (:) = 0.0
+ELSE
+  ALLOCATE(TPDIAG%XLAKE_STO(0))
+  ALLOCATE(TPDIAG%XLAKE_OUT(0))
+  ALLOCATE(TPDIAG%XLAKE_IN (0))
+  ALLOCATE(TPDIAG%XLAKE_H  (0))
+ENDIF
+!
+IF (LHOOK) CALL DR_HOOK('ALLOC_TRIP_DIAG:ALLOC_DIAG',1,ZHOOK_HANDLE)
+!
+END SUBROUTINE ALLOC_DIAG
+!
+!-------------------------------------------------------------------------------
+END SUBROUTINE ALLOC_TRIP_DIAG

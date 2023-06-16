@@ -55,6 +55,7 @@ ZTOP   (:,:) = 0.0
 ZBOTTOM(:,:) = 0.0
 ZLEFT  (:,:) = 0.0
 ZRIGHT (:,:) = 0.0
+PQGCELL(:,:) = 0.0
 !
 DO JLAT = 1,KLAT
     DO JLON = 1,KLON

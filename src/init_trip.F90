@@ -97,7 +97,7 @@ REAL,             INTENT(OUT) :: PTIME   !date UTC
 !
 INTEGER,          INTENT(OUT) :: KLON      ! number of points in longitude
 INTEGER,          INTENT(OUT) :: KLAT      ! number of points in latitude
-INTEGER,          INTENT(OUT) :: KLAKE_NUM ! number of points in latitude
+INTEGER,          INTENT(OUT) :: KLAKE_NUM ! number of lakes
 !
 REAL,             INTENT(IN)  :: PTSTEP_RUN
 REAL,             INTENT(IN)  :: PTSTEP_DIAG

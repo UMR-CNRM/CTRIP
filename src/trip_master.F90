@@ -231,8 +231,6 @@ CALL INIT_TRIP(YTRIP_CUR%TPDG, YTRIP_CUR%TP, YTRIP_CUR%TPG, YTRIP_CUR%TPLK, &
 ! IF (NRANK==NPIO) WRITE(*,*) '5. Select processor for each basin'
 CALL TRIP_BASIN_PROC(YTRIP_CUR%TPG, YTRIP_CUR%TPLK, YTRIP_CUR%TPST, &
                      NLISTING,ILON,ILAT,ILAKE_NUM                   )
-! IF(NRANK==NPIO)WRITE(*,*)YTRIP_CUR%TPST%NSTATE_IND(150,150)
-! IF(NRANK/=NPIO)WRITE(*,*)YTRIP_CUR%TPST%NSTATE_IND_P(150,150)
 !
 ! --------------------------------------------------------------------------------------
 ! * 6. Prepare state vector

@@ -10,21 +10,15 @@ Assuming that `SURFEXDIR` is the main directory of SURFEX.
 
 1. Get the CTRIP code from the git repository:
 
-```
-cd $SURFEXDIR/src/LIB
-git clone https://github.com/UMR-CNRM/CTRIP.git
-```
+    cd $SURFEXDIR/src/LIB
+    git clone https://github.com/UMR-CNRM/CTRIP.git
 
 2. Change the `Makefile.SURFEX.mk` to point to the new CTRIP directory:
 
-```
-cd $SURFEXDIR/src/
-sed -i "s/TRIPv2/CTRIP/" Makefile.SURFEX.mk
-```
+    cd $SURFEXDIR/src/
+    sed -i "s/TRIPv2/CTRIP/" Makefile.SURFEX.mk
 
 3. Compile SURFEX, with the following variable to also compile CTRIP and enable the coupling between ISBA and CTRIP via OASIS:
 
-```
-export VER_OASIS="mct"
-```
+    export VER_OASIS="mct"
 

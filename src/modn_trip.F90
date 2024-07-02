@@ -75,8 +75,8 @@ LOGICAL          :: LGWSUBF  = .TRUE. !Use sub-grid fraction to couple with SURF
 REAL             :: XGWSUBD  = 0.0    !Sub-grid depth uses to adjust the WTD
                                       !used to compute the sub-grid fraction
 !
-LOGICAL          :: LCALCNEARAQ = .FALSE. ! If yes, nearest aquifer numbering is computed
-                                          ! Else it is read from TRIP_PGD
+LOGICAL          :: LCALCNEARAQ = .TRUE. ! If yes, nearest aquifer numbering is computed
+                                         ! Else it is read from TRIP_PGD
 !
 !Floodplains scheme
 !

@@ -244,9 +244,9 @@ ENDIF
 IF(PRESENT(PRUNTIME))THEN
   IF(MOD(PRUNTIME,XTSTEP_RUN)/=0.)THEN
     WRITE(KLISTING,*)'! MOD(PRUNTIME,XTSTEP_RUN)/=0 !!!'     
-    WRITE(KLISTING,*)'! XTSTEP_RUN must be a multiple of $RUNTIME in oasis namcouple !!!' 
+    WRITE(KLISTING,*)'! RUNTIME in oasis namcouple must be a multiple of XTSTEP_RUN !!!'
     WRITE(KLISTING,*)'XTSTEP_RUN =',XTSTEP_RUN,'$RUNTIME =',PRUNTIME
-    CALL ABORT_TRIP('TRIP_OASIS_READ_NAM: XTSTEP_RUN must be a multiple of $RUNTIME in oasis namcouple !!!')
+    CALL ABORT_TRIP('TRIP_OASIS_READ_NAM: RUNTIME in oasis namcouple must be a multiple of XTSTEP_RUN !!!')
   ENDIF
 ENDIF
 !

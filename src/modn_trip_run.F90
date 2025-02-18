@@ -50,8 +50,11 @@ CHARACTER(LEN=6)                  :: CMODEL_NAME  = 'trip'
 !*    Names of files
 !     --------------
 !
-CHARACTER(LEN=28), PARAMETER      :: CNAMELIST    = 'TRIP_OPTIONS.nam'
-CHARACTER(LEN=50)                 :: CFILE_FRC    = 'TRIP_FORCING.nc'
+CHARACTER(LEN=28), PARAMETER      :: CNAMELIST     = 'TRIP_OPTIONS.nam'
+CHARACTER(LEN=50)                 :: CFILE_FRC     = 'TRIP_FORCING.nc'
+CHARACTER(LEN=50)                 :: CFILE_ISBAFRC = 'ISBA_DIAG_CUMUL.nc' ! for use in SFX_FORCING
+CHARACTER(LEN=50)                 :: CFILE_DRAIN   = 'DRAINC_ISBA.BIN'    ! for use in SFX_FORCING
+CHARACTER(LEN=50)                 :: CFILE_RUNOFF  = 'RUNOFFC_ISBA.BIN'   ! for use in SFX_FORCING
 !
 !
 !*    General flags defining forcing options
@@ -59,7 +62,7 @@ CHARACTER(LEN=50)                 :: CFILE_FRC    = 'TRIP_FORCING.nc'
 !
 !
 LOGICAL                           :: LCUMFRC  = .FALSE.  ! Cumulated (or not) forcing variables
-CHARACTER(LEN=6)                  :: CREADFRC = 'VECTOR' ! Forcing file format
+CHARACTER(LEN=6)                  :: CREADFRC = 'LATLON' ! Forcing file format
                                                          ! VECTOR = vector (normaly ilat*ilon)
                                                          ! LATLON = Regular lat lon grid
 LOGICAL                           :: LISBAFRC = .FALSE.  ! True if ISBA_DIAG files used as forcing
@@ -93,8 +96,9 @@ CHARACTER(LEN=12), DIMENSION(4000) :: CSELECT
 !*       1.    NAMELISTS
 !              ---------
 !
-NAMELIST/NAM_TRIP_RUN/CREADFRC,CDRAIN,CRUNOFF,LCUMFRC,LISBAFRC,LDIAG_MISC,  &
-                      LPRINT,LRESTART,XTSTEP_RUN,XTSTEP_DIAG,LWR_DIAG,CSELECT
+NAMELIST/NAM_TRIP_RUN/CREADFRC,CDRAIN,CRUNOFF,LCUMFRC,LISBAFRC, &
+                      CFILE_ISBAFRC,CFILE_DRAIN,CFILE_RUNOFF, &
+                      LDIAG_MISC,LPRINT,LRESTART,XTSTEP_RUN,XTSTEP_DIAG,LWR_DIAG,CSELECT
 !
 !-------------------------------------------------------------------------------
 !

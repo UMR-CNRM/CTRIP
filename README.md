@@ -70,4 +70,31 @@ Assuming that `SURFEXDIR` is the main directory of SURFEX.
 | XTSTEP_RUN | 86400 | Time step of the forcing file (s) |
 | XTSTEP_DIAG | 86400 | Time step of the output diagnostics (s) |
 
+### NAM_TRIP_ASSIM
+| key | default | description |
+| --- | --- | --- |
+| LASSIM | .FALSE.      | TRUE if assimilation run |
+| LPARAMENS | .FALSE.   | TRUE for use of ensemble TRIP_PARAM_???.nc |
+| LOBS_Q | .TRUE.       | TRUE if discharge assimilation |
+| LOBS_H | .FALSE.      | TRUE if water depth assimilation |
+| CLOCAL | 'FUN'        | Localization based on function (FUN) or covariance (COV) |
+| CLOCAL_FILE | 'TRIP_LOCAL_VARIOGRAM.nc' | Name of localization file |
+| NLOCAL_LEN | 0        | Localization length in number of pixels (for CLOCAL='FUN') |
+| XLOCAL_AMP | 1.       | Multiplicative factor on local covariance |
+| NSMOOTH_LEN | 0       | Smoothing length (in number of forcing time steps) |
+| XTSTEP_OBS | 86400.   | Time step of observations (in seconds) |
+| LUSE_OBS_ERR | .FALSE.| If true, XSGIMA_R provided in OBS.nc, else XSGIMA_R |
+| XSIGMA_R_Q | 0.1      | Observation error for discharge (multiplicative) |
+| XSIGMA_R_H | 0.1      | Observation error for discharge (additive) |
+| LINIT_PERT | .TRUE.   | TRUE for initial perturbation |
+| XMEAN_P | 1.0         | Mean of initial perturbation (multiplicative) |
+| XAMP_P  | 0.01        | Amplitude of initial perturbation |
+| CINFL | 'DEF'         | Inflation method (DEF, IMP, A09, S21) |
+| XAMP_I  | 1.01        | Amplitude of inflation (should be >1) |
+| XINFL_INIT | 1.01     | Initial value of inflation |
+| XINFL_VAR_INIT | 0.5  | Initial value of inflation variance |
+
+
+
+
 

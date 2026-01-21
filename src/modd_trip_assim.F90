@@ -10,8 +10,10 @@ INTEGER :: NPIO_ASSIM  = 0
 CHARACTER(LEN=256)                  :: COBS_FILE = 'OBS.nc' ! Name of observation file
 INTEGER                             :: NOBS                 ! Number of obervation times
 INTEGER                             :: NENS                 ! Number of ensemble members
-CHARACTER(LEN=256)                  :: COBS_NAME = 'OBS'
-CHARACTER(LEN=256)                  :: COBS_ERR_NAME = 'OBS_ERR'
+CHARACTER(LEN=256)                  :: COBS_Q_NAME = 'QDIS'
+CHARACTER(LEN=256)                  :: COBS_Q_ERR_NAME = 'QDIS_ERR'
+CHARACTER(LEN=256)                  :: COBS_H_NAME = 'HSTREAM'
+CHARACTER(LEN=256)                  :: COBS_H_ERR_NAME = 'HSTREAM_ERR'
 !
 END MODULE MODD_TRIP_ASSIM
 

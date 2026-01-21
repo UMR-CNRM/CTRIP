@@ -284,10 +284,10 @@ IF(LASSIM)THEN
     WRITE(NLISTING,*)'! You cannot use the assimilation scheme without the variable velocity scheme !!!'
     CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the variable velocity scheme !!!')
   ENDIF
-  IF(CGROUNDW/='DEF')THEN
-    WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the groundwater scheme !!!'
-    CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the groundwater scheme !!!')
-  ENDIF
+  !IF(CGROUNDW/='DEF')THEN
+  !  WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the groundwater scheme !!!'
+  !  CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the groundwater scheme !!!')
+  !ENDIF
   IF(LFLOOD)THEN
     WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the flooding scheme !!!'
     CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the flooding scheme !!!')

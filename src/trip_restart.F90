@@ -24,6 +24,7 @@ SUBROUTINE TRIP_RESTART (TP, TPG, TPLK, TPST, &
 !!      Original    28/05/05
 !!      S. Munier   28/03/2020 CTRIP-12D and parallelization
 !!      T. Guinaldo 04/2020    Add MLake
+!!      S. Munier   06/2021 - Restart file name for ensemble assimilation
 !-------------------------------------------------------------------------------
 !
 !*       0.     DECLARATIONS
@@ -38,6 +39,7 @@ USE MODD_TRIP_STATE, ONLY : TRIP_STATE_t
 USE MODD_TRIP_MPI
 !
 USE MODN_TRIP,      ONLY : CGROUNDW, LFLOOD, CLAKE
+USE MODN_TRIP_ASSIM, ONLY : LASSIM, CINFL
 !
 USE MODE_RW_TRIP
 USE MODE_TRIP_GRID_STATE, ONLY : TRIP_STATE_TO_GRID
@@ -89,6 +91,10 @@ INTEGER :: IERR
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 !
 !-------------------------------------------------------------------------------
+!
+! * Rename restart file if assimilation
+!
+IF (LASSIM) YFILE = "TRIP_RESTART_"//CRANK//".nc"
 !
 ! * Store output in diag file
 !
@@ -162,6 +168,11 @@ IF(LFLOOD)THEN
   CALL MPI_GATHER(TPST%XHFLOOD,ISTATE,MPI_DOUBLE,ZSTATE,ISTATE,MPI_DOUBLE,NPIO,NCOMM,IERR)
   IF (NRANK==NPIO) CALL TRIP_STATE_TO_GRID(TPST%NSTATE_LON,TPST%NSTATE_LAT,ZSTATE,TP%XHFLOOD)
   IF (NRANK==NPIO) CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,LMASK,TP%XHFLOOD,ODOUBLE=LDOUBLE)
+ENDIF
+!
+IF(LASSIM.AND.(CINFL=='A09'.OR.CINFL=='S21'))THEN
+  YVNAME ='INFL'
+  IF (NRANK==NPIO) CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,LMASK,TP%XINFL,ODOUBLE=LDOUBLE)
 ENDIF
 !
 IF (NRANK==NPIO) THEN

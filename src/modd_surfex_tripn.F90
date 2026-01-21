@@ -9,6 +9,7 @@ USE MODD_TRIP_GRID, ONLY : TRIP_GRID_t
 USE MODD_TRIP_STATE, ONLY : TRIP_STATE_t
 USE MODD_TRIP_DIAG, ONLY : TRIP_DIAG_t
 USE MODD_TRIP_LAKE, ONLY : TRIP_LAKE_t
+USE MODD_TRIP_ANALYSIS, ONLY : TRIP_ANALYSIS_t
 !
 !---------------------------------------------------------------------------
 !
@@ -19,6 +20,7 @@ TYPE(TRIP_GRID_t)     :: TPG
 TYPE(TRIP_STATE_t)    :: TPST
 TYPE(TRIP_DIAG_t)     :: TPDG
 TYPE(TRIP_LAKE_t)     :: TPLK
+TYPE(TRIP_ANALYSIS_t) :: TPA
 !
 END TYPE TRIP_MODEL_t
 !

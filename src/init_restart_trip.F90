@@ -38,6 +38,7 @@ USE MODE_TRIP_NETCDF
 !
 USE MODN_TRIP,     ONLY : CGROUNDW, LFLOOD, CLAKE
 USE MODD_TRIP_PAR, ONLY : XUNDEF, LNCPRINT
+USE MODN_TRIP_ASSIM, ONLY : LASSIM, CINFL
 !
 USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK
 USE PARKIND1  ,ONLY : JPRB
@@ -87,6 +88,7 @@ IND = 1
 IF(CGROUNDW=='CST'.OR.CGROUNDW=='DIF') IND = IND + 1
 IF(LFLOOD)IND = IND + 3
 IF(CLAKE=='MLK')IND  = IND + 1
+IF(LASSIM.AND.(CINFL=='A09'.OR.CINFL=='S21')) IND = IND+1
 !
 ! * Allocate netcdf file attributs
 !
@@ -99,36 +101,30 @@ ALLOCATE(LLAKE(IND))
 ALLOCATE(ZLON(KLON))
 ALLOCATE(ZLAT(KLAT))
 !
+! Default values
+LDOUBLE(:) = .TRUE.
+LLAKE(:) = .FALSE.
+!
 ! * Initialyse netcdf file attributs
 !
-YVNAME (1) = 'SURF_STO                  '
-YVLNAME(1) = 'River storage             '
-YUNIT  (1) = 'kg                        '
-LDOUBLE(1)=.TRUE.
-LLAKE(1) = .FALSE.
-!
-!
 INUM = 1
+YVNAME (INUM) = 'SURF_STO                  '
+YVLNAME(INUM) = 'River storage             '
+YUNIT  (INUM) = 'kg                        '
 !
 IF(CGROUNDW=='CST')THEN
-!        
+!
 INUM = INUM + 1
 YVNAME (INUM) = 'GROUND_STO                '
 YVLNAME(INUM) = 'Groundwater storage       '
 YUNIT  (INUM) = 'kg                        '
-LDOUBLE(INUM)=.TRUE.
-LLAKE(INUM) = .FALSE.
-!
 !
 ELSEIF(CGROUNDW=='DIF')THEN
-!        
+!
 INUM = INUM + 1
 YVNAME (INUM) = 'HGROUND                   '
 YVLNAME(INUM) = 'Groundwater height        '
 YUNIT  (INUM) = 'm                         '
-LDOUBLE(INUM)=.TRUE.
-LLAKE(INUM) = .FALSE.
-!
 !
 ENDIF
 !
@@ -138,26 +134,16 @@ INUM = INUM + 1
 YVNAME (INUM) = 'FLOOD_STO                 '
 YVLNAME(INUM) = 'Floodplain storage        '
 YUNIT  (INUM) = 'kg                        '
-LDOUBLE(INUM)=.TRUE.
-LLAKE(INUM) = .FALSE.
-!
 !
 INUM = INUM + 1
 YVNAME (INUM) = 'FFLOOD                    '
 YVLNAME(INUM) = 'TRIP flooded fraction     '
 YUNIT  (INUM) = '-                         '
-LDOUBLE(INUM)=.TRUE.
-LLAKE(INUM) = .FALSE.
-!
 !
 INUM = INUM + 1
 YVNAME (INUM) = 'HFLOOD                    '
 YVLNAME(INUM) = 'Flood depth               '
 YUNIT  (INUM) = 'm                         '
-LDOUBLE(INUM)=.TRUE.
-LLAKE(INUM) = .FALSE.
-
-!
 !
 ENDIF
 !
@@ -167,15 +153,22 @@ INUM = INUM +1
 YVNAME(INUM) = 'LAKE_STO'
 YVLNAME(INUM)= 'Lake storage'
 YUNIT(INUM)  = 'kg'
-LDOUBLE(INUM)=.TRUE.
 LLAKE(INUM)  = .TRUE.
 !
 !INUM = INUM +1
 !YVNAME(INUM) = 'H_LAKE'
 !YVLNAME(INUM)= 'Lake height'
 !YUNIT(INUM)  = 'm'
-!LDOUBLE(INUM)=.TRUE.
 !LLAKE(INUM)  = .TRUE.
+!
+ENDIF
+!
+IF(LASSIM.AND.(CINFL=='A09'.OR.CINFL=='S21'))THEN
+!
+INUM = INUM +1
+YVNAME(INUM) = 'INFL'
+YVLNAME(INUM)= 'Assimilation inflation'
+YUNIT(INUM)  = '-'
 !
 ENDIF
 !

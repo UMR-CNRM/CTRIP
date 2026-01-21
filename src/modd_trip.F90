@@ -105,6 +105,12 @@ REAL, POINTER, DIMENSION(:,:) :: XCPL_CALVGRE      ! Calving flux over greenland
 REAL, POINTER, DIMENSION(:,:) :: XCPL_CALVANT      ! Calving flux over antarctica [kg/m2]
 !
 !-------------------------------------------------------------------------------
+!
+! Assimilation :
+!
+REAL, POINTER, DIMENSION(:,:) :: XINFL             ! Inflation
+!
+!-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !
 END TYPE TRIP_t
@@ -151,6 +157,8 @@ IF (LHOOK) CALL DR_HOOK("MODD_TRIP:TRIP_INIT",0,ZHOOK_HANDLE)
   NULLIFY(YTRIP%XCPL_PIFLOOD)
   NULLIFY(YTRIP%XCPL_CALVGRE)
   NULLIFY(YTRIP%XCPL_CALVANT)
+!
+  NULLIFY(YTRIP%XINFL)
 !
 IF (LHOOK) CALL DR_HOOK("MODD_TRIP:TRIP_INIT",1,ZHOOK_HANDLE)
 END SUBROUTINE TRIP_INIT

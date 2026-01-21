@@ -1,0 +1,166 @@
+!     #########
+SUBROUTINE TRIP_ANALYSIS_WRITE (TPA, &
+                                KLISTING, KPNT, KENS, KOBS, KNB_TSTEP, PTIMEC)
+!     ############################################################
+!
+!!****  *TRIP_ANALYSIS_WRITE*
+!!
+!!    PURPOSE
+!!    -------
+!
+!     TRIP river routing outputs.
+!
+!!
+!!    AUTHOR
+!!    ------
+!!      B. Decharme
+!!
+!!    MODIFICATIONS
+!!    -------------
+!!      Original    28/05/05
+!!      S. Munier   07/2019 - Output file name for ensemble assimilation
+!-------------------------------------------------------------------------------
+!
+!*       0.     DECLARATIONS
+!               ------------
+!
+!
+USE MODD_TRIP_ANALYSIS, ONLY : TRIP_ANALYSIS_t
+!
+USE MODD_TRIP_PAR,   ONLY : LNCPRINT
+USE MODD_TRIP_ASSIM
+!
+USE MODE_RW_TRIP
+USE MODI_TEST_DIAG_WRITE
+!
+USE NETCDF
+!
+USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK
+USE PARKIND1  ,ONLY : JPRB
+!
+IMPLICIT NONE
+!
+!*      0.1    declarations of arguments
+!
+!
+TYPE(TRIP_ANALYSIS_t), INTENT(INOUT) :: TPA
+!
+INTEGER, INTENT(IN) :: KLISTING
+INTEGER, INTENT(IN) :: KPNT
+INTEGER, INTENT(IN) :: KENS
+INTEGER, INTENT(IN) :: KOBS
+INTEGER, INTENT(IN) :: KNB_TSTEP
+REAL,    INTENT(IN) :: PTIMEC
+!
+!*      0.2    declarations of local variables
+!
+CHARACTER(LEN=50)                    :: YANALYSIS  = 'TRIP_ANALYSIS.nc'
+CHARACTER(LEN=50)                    :: YFILE
+CHARACTER(LEN=10)                    :: YVNAME
+CHARACTER(LEN=50)                    :: YUNITS
+!
+LOGICAL, DIMENSION(KPNT,KENS)        :: GMASK_ENS
+LOGICAL, DIMENSION(KPNT)             :: GMASK_PNT_X
+LOGICAL, DIMENSION(:,:), ALLOCATABLE :: GMASK_PNT
+!
+INTEGER :: ITNUM, ITVAL, IRET, IFILE_ID, IVAR_ID
+INTEGER :: INOBS(1), ISTART(1), ICOUNT(1)
+LOGICAL :: GWRITE
+REAL(KIND=JPRB) :: ZHOOK_HANDLE
+!
+!-------------------------------------------------------------------------------
+!
+IF (LHOOK) CALL DR_HOOK('TRIP_ANALYSIS_WRITE',0,ZHOOK_HANDLE)
+!
+!-------------------------------------------------------------------------------
+!
+! * Time attribute
+!
+ITNUM = KNB_TSTEP
+YFILE = COBS_FILE(1:LEN_TRIM(COBS_FILE))
+IRET = NF90_OPEN(YFILE,NF90_NOWRITE,IFILE_ID)
+IRET = NF90_INQ_VARID(IFILE_ID,'time',IVAR_ID)
+IRET = NF90_GET_ATT(IFILE_ID,IVAR_ID,'units',YUNITS)
+IF (YUNITS(1:4)=='seco') THEN
+  ITVAL = INT(PTIMEC)
+ELSEIF (YUNITS(1:4)=='hour') THEN
+  ITVAL = INT(PTIMEC/3600.)
+ELSEIF (YUNITS(1:4)=='days') THEN
+  ITVAL = INT(PTIMEC/86400.)
+ENDIF
+IRET = NF90_CLOSE(IFILE_ID)
+!
+!-------------------------------------------------------------------------------
+!outputs
+!-------------------------------------------------------------------------------
+!
+YFILE = YANALYSIS(1:LEN_TRIM(YANALYSIS))
+GMASK_ENS(:,:) = .TRUE.
+GMASK_PNT_X(:) = .TRUE.
+!
+! * Store output in analysis file
+!
+!YVNAME = 'NOBS'
+!CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+!IF(GWRITE)THEN
+!  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,(/.TRUE./),TPA%NOBS,ITNUM,ITVAL)
+!ENDIF
+!
+YVNAME = 'XB'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_ENS,TPA%XB,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'XA'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_ENS,TPA%XA,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'INFL'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_PNT_X,TPA%XINFL,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'INFL_VAR'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_PNT_X,TPA%XINFL_VAR,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'INNOV'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_PNT_X,TPA%XINNOV,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'LOCAL'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  IF (.NOT.ALLOCATED(GMASK_PNT)) THEN
+    ALLOCATE(GMASK_PNT(KPNT,KPNT))
+    GMASK_PNT(:,:) = .TRUE.
+  ENDIF
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_PNT,TPA%XLOCAL,ITNUM,ITVAL)
+ENDIF
+!
+YVNAME = 'KALMAN'
+CALL TEST_DIAG_WRITE(YVNAME,GWRITE)
+IF(GWRITE)THEN
+  IF (.NOT.ALLOCATED(GMASK_PNT)) THEN
+    ALLOCATE(GMASK_PNT(KPNT,KPNT))
+    GMASK_PNT(:,:) = .TRUE.
+  ENDIF
+  CALL WRITE_TRIP(KLISTING,YFILE,YVNAME,GMASK_PNT,TPA%XK,ITNUM,ITVAL)
+ENDIF
+!
+IF (ALLOCATED(GMASK_PNT)) DEALLOCATE(GMASK_PNT)
+!
+!-------------------------------------------------------------------------------
+!
+IF (LHOOK) CALL DR_HOOK('TRIP_ANALYSIS_WRITE',1,ZHOOK_HANDLE)
+!
+!-------------------------------------------------------------------------------
+END SUBROUTINE TRIP_ANALYSIS_WRITE

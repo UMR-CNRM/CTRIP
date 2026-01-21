@@ -42,6 +42,7 @@ SUBROUTINE INIT_TRIP (TPDG, TP, TPG, TPLK, &
 !!      For surfex  21/05/08
 !!      S. Munier   03/2020    CTRIP-12D and parallelization
 !!      T. Guinaldo 04/2020    Add MLake
+!!      S. Munier   06/2021 - PREP file name for ensemble assimilation
 !-------------------------------------------------------------------------------
 !
 !*       0.     DECLARATIONS
@@ -55,11 +56,13 @@ USE MODD_TRIP_LAKE, ONLY : TRIP_LAKE_t
 USE MODN_TRIP, ONLY : CGROUNDW, CVIT, LFLOOD, CLAKE, LCALCRIVLEN, &
                       XCVEL, XRATMED, XTSTEP, LBACKWATER, &
                       LGWSUBF, XGWSUBD, LAPPROXVEL, XBANKSLOPE
+USE MODN_TRIP_ASSIM, ONLY : LASSIM, LPARAMENS, CINFL
 !
 USE MODD_TRIP_PAR
 USE MODD_TRIP_LISTING, ONLY : NLISTING
 USE MODD_TRIP_MPI
 USE MODD_TRIP_OASIS, ONLY : LCPL_LAND, LCPL_GW
+USE MODD_TRIP_ASSIM
 !
 USE MODE_TRIP_GRID
 USE MODE_TRIP_INIT
@@ -109,7 +112,7 @@ LOGICAL,          INTENT(IN)  :: OXIOS
 !
 !*      0.2    declarations of local variables
 !
-CHARACTER(LEN=13), PARAMETER         :: YFILE_PARAM  ='TRIP_PARAM.nc'
+CHARACTER(LEN=25)                    :: YFILE_PARAM  ='TRIP_PARAM.nc'
 CHARACTER(LEN=25)                    :: YFILE_INIT   ='TRIP_PREP.nc'
 CHARACTER(LEN=25)                    :: YFILE_RESTART='TRIP_RESTART.nc'
 CHARACTER(LEN=25)                    :: YDIAG        ='TRIP_DIAG.nc'
@@ -170,6 +173,21 @@ WRITE(NLISTING,*)'        INITIALYSE TRIP            '
 WRITE(NLISTING,*)''
 !
 !-------------------------------------------------------------------------------
+! * Rename files if assimilation
+!-------------------------------------------------------------------------------
+!
+IF (LASSIM) THEN
+  ! Use PREP file of NRANK=1 for NRANK=0
+  IF (NRANK_ASSIM==NPIO_ASSIM) CRANK='001'
+  YFILE_INIT = "TRIP_PREP_"//CRANK//".nc"
+  YFILE_RESTART = "TRIP_RESTART_"//CRANK//".nc"
+  YDIAG = "TRIP_DIAG_"//CRANK//".nc"
+  YRUN = "TRIP_DIAG_RUN_"//CRANK//".nc"
+  IF (LPARAMENS.AND.NRANK_ASSIM/=NPIO_ASSIM) YFILE_PARAM = "TRIP_PARAM_"//CRANK//".nc"
+  IF (NRANK_ASSIM==NPIO_ASSIM) CRANK='000'
+ENDIF
+!
+!-------------------------------------------------------------------------------
 ! * Read date
 !-------------------------------------------------------------------------------
 !
@@ -203,8 +221,8 @@ CALL GET_LONLAT_TRIP(TPG, &
 !
 IF(CVIT == 'VAR' .AND. LAPPROXVEL) CALL POWER_2THIRD_INIT()
 !
-! Only IO processus does continue this routine
-IF(NRANK/=NPIO) THEN
+! Only IO processus does continue this routine, unless assimilation is enabled
+IF(NRANK/=NPIO .AND. .NOT. LASSIM) THEN
   IF (LHOOK) CALL DR_HOOK('INIT_TRIP',1,ZHOOK_HANDLE)
   RETURN
 ENDIF
@@ -258,6 +276,25 @@ IF(CLAKE=='MLK')THEN
   IF(ZGRID_RES>=0.5)THEN
     WRITE(NLISTING,*)'! You cannot use the MLake scheme with a resolution different than 1/12° !!!'
     CALL ABORT_TRIP('INIT_TRIP: You cannot use the MLake scheme with a resolution different than 1/12° !!!')
+  ENDIF
+ENDIF
+!
+IF(LASSIM)THEN
+  IF(CVIT /= 'VAR')THEN
+    WRITE(NLISTING,*)'! You cannot use the assimilation scheme without the variable velocity scheme !!!'
+    CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the variable velocity scheme !!!')
+  ENDIF
+  IF(CGROUNDW/='DEF')THEN
+    WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the groundwater scheme !!!'
+    CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the groundwater scheme !!!')
+  ENDIF
+  IF(LFLOOD)THEN
+    WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the flooding scheme !!!'
+    CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the flooding scheme !!!')
+  ENDIF
+  IF(CLAKE=='MLK')THEN
+    WRITE(NLISTING,*)'! You cannot use the assimilation scheme with the mass lake scheme !!!'
+    CALL ABORT_TRIP('INIT_TRIP: You cannot use the assimilation scheme without the mass lake scheme !!!')
   ENDIF
 ENDIF
 !
@@ -411,6 +448,12 @@ ELSE
   ALLOCATE(TPLK%XLAKE_STO  (0))
   ALLOCATE(TP%XWEIR_Z      (0,0))
   ALLOCATE(TP%XWEIR_W      (0,0))
+ENDIF
+!
+IF(LASSIM.AND.(CINFL=='A09'.OR.CINFL=='S21'))THEN
+  ALLOCATE(TP%XINFL(KLON,KLAT))
+ELSE
+  ALLOCATE(TP%XINFL(0,0))
 ENDIF
 !
 !-------------------------------------------------------------------------------
@@ -722,6 +765,13 @@ IF(CLAKE=='MLK')THEN
 !
 ENDIF
 !
+IF(LASSIM.AND.(CINFL=='A09'.OR.CINFL=='S21'))THEN
+!
+  YVAR = 'INFL'
+  CALL READ_TRIP(NLISTING,YFILE_INIT,YVAR,TP%XINFL)
+!
+ENDIF
+!
 !-------------------------------------------------------------------------------
 ! * Initial Conditions
 !-------------------------------------------------------------------------------
@@ -864,6 +914,12 @@ ENDIF
 ! DEALLOCATE(ZHSTREAM)
 DEALLOCATE(ZGW_STO)
 DEALLOCATE(ZWTD)
+!
+! If assimilation is enabled, only non IO procs need to handle diag
+IF (LASSIM .AND. NRANK_ASSIM==NPIO_ASSIM) THEN
+  IF (LHOOK) CALL DR_HOOK('INIT_TRIP',1,ZHOOK_HANDLE)
+  RETURN
+ENDIF
 !
 !-------------------------------------------------------------------------------
 ! * Alloc diag

@@ -9,7 +9,8 @@ SUBROUTINE TRIP_INTERFACE (TPDG, TP, TPG, TPLK, TPST,          &
                            PTIME,PTIMEC,                       &
                            KNB_TSTEP_RUN,KNB_TSTEP_DIAG,       &
                            PTSTEP_RUN,PTSTEP_DIAG,PRUNOFF,     &
-                           PDRAIN,PCALVING,PSRC_FLOOD,OXIOS    )
+                           PDRAIN,PCALVING,PSRC_FLOOD,OXIOS,   &
+                           OWRITE_DIAG                         )
 !#################################################################
 !
 !!****  *TRIP*
@@ -102,6 +103,7 @@ REAL,                 INTENT(IN)    :: PTSTEP_RUN     !Run  timestep         [s]
 REAL,                 INTENT(IN)    :: PTSTEP_DIAG    !Diag timestep         [s]
 INTEGER,              INTENT(INOUT) :: KNB_TSTEP_DIAG !DIAG call counter     [-]
 LOGICAL,              INTENT(IN)    :: OXIOS          !Do we use XIOS
+LOGICAL, OPTIONAL,    INTENT(INOUT) :: OWRITE_DIAG    !Do we write diag (if assimilation)
 !
 REAL, DIMENSION(:),   INTENT(IN)    :: PRUNOFF   !Input surface runoff            [kg/s]
 REAL, DIMENSION(:),   INTENT(IN)    :: PDRAIN    !Input free drainage             [kg/s]
@@ -282,12 +284,14 @@ DO JTSTEP=1,ITSTEP !TRIP time step loop
 !
 !  * Write diagnostic
 !
-  IF (LWR_DIAG.AND.MOD(PTIMEC,PTSTEP_DIAG)==0.) THEN
-    KNB_TSTEP_DIAG = KNB_TSTEP_DIAG + 1
-    CALL TRIP_DIAG_GATHER(TPLK, TPDG, TPST)
-    IF (NRANK==NPIO) THEN
-      CALL TRIP_DIAG_WRITE(TPDG, TPG,                                                    &
-                           KLISTING,KLON,KLAT,KLAKE_NUM,KNB_TSTEP_DIAG,PTSTEP_DIAG,OXIOS )
+  IF (.NOT.PRESENT(OWRITE_DIAG).OR.OWRITE_DIAG.OR.JTSTEP<ITSTEP) THEN
+    IF (LWR_DIAG.AND.MOD(PTIMEC,PTSTEP_DIAG)==0.) THEN
+      KNB_TSTEP_DIAG = KNB_TSTEP_DIAG + 1
+      CALL TRIP_DIAG_GATHER(TPLK, TPDG, TPST)
+      IF (NRANK==NPIO) THEN
+        CALL TRIP_DIAG_WRITE(TPDG, TPG,                                                    &
+                             KLISTING,KLON,KLAT,KLAKE_NUM,KNB_TSTEP_DIAG,PTSTEP_DIAG,OXIOS )
+      ENDIF
     ENDIF
   ENDIF
 !

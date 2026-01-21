@@ -38,6 +38,7 @@ USE MODE_TRIP_NETCDF
 USE MODN_TRIP,       ONLY : CGROUNDW, CVIT, LFLOOD, CLAKE, XBANKSLOPE, LBACKWATER
 USE MODD_TRIP_PAR,   ONLY : XUNDEF, NDIMTAB, LNCPRINT
 USE MODD_TRIP_OASIS, ONLY : LCPL_LAND, LCPL_GW
+USE MODN_TRIP_ASSIM, ONLY : LASSIM
 !
 !
 USE YOMHOOK   ,ONLY : LHOOK,   DR_HOOK
@@ -92,6 +93,7 @@ IF(LFLOOD.OR.CGROUNDW=='DIF'.OR.XBANKSLOPE>0.0)INPARAM = INPARAM + 1
 IF(LBACKWATER.OR.CGROUNDW=='DIF')INPARAM = INPARAM + 1
 IF(LFLOOD                   )INPARAM = INPARAM + 4
 IF(CLAKE=='MLK'             )INPARAM = INPARAM + 6
+IF(LASSIM                   )INPARAM = INPARAM + 1
 !
 !
 ! * Allocate netcdf file attributs
@@ -356,6 +358,17 @@ YVNAME (INUM) = 'TABVF                     '
 YVLNAME(INUM) = 'Potential flood volume    '
 YUNIT  (INUM) = 'kg/m2                     '
 LZLEN  (INUM) = .TRUE.
+LDOUBLE(INUM) = .FALSE.
+!
+ENDIF
+!
+IF(LASSIM)THEN
+!
+INUM = INUM + 1
+YVNAME (INUM) = 'LOCAL_LEN                 '
+YVLNAME(INUM) = 'Length of cov-localization'
+YUNIT  (INUM) = 'nb_of_pixels              '
+LZLEN  (INUM) = .FALSE.
 LDOUBLE(INUM) = .FALSE.
 !
 ENDIF

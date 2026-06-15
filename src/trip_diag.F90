@@ -103,7 +103,7 @@ ENDIF
 !
 ! * Actualisation of input surface runoff and drainage (or recharge)
 !
-IF(LCPL_LAND.AND.LDIAG_MISC)THEN
+IF(LDIAG_MISC)THEN
   TPDG%TDIAG_ST%XRUNOFF(:) = TPDG%TDIAG_ST%XRUNOFF(:) + PRUNOFF(:) * PTSTEP / TPST%XAREA(:)
   TPDG%TDIAG_ST%XDRAIN (:) = TPDG%TDIAG_ST%XDRAIN (:) + PDRAIN (:) * PTSTEP / TPST%XAREA(:)
 ENDIF

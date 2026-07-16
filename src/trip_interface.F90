@@ -141,6 +141,7 @@ REAL                    :: ZGOUT_ALL  !Global gw outflow                  [kg/m2
 !
 INTEGER :: JTSTEP, ITSTEP
 INTEGER :: IERR
+LOGICAL :: GWRITE_DIAG
 !
 REAL(KIND=JPRB) :: ZHOOK_HANDLE
 !
@@ -177,6 +178,12 @@ ZGSTO_ALL  = 0.0
 ZGSTO2_ALL = 0.0
 ZGIN_ALL   = 0.0
 ZGOUT_ALL  = 0.0
+!
+IF (.NOT.PRESENT(OWRITE_DIAG)) THEN
+  GWRITE_DIAG = .TRUE.
+ELSE
+  GWRITE_DIAG = OWRITE_DIAG
+ENDIF
 !
 !-------------------------------------------------------------------------------
 !
@@ -284,7 +291,7 @@ DO JTSTEP=1,ITSTEP !TRIP time step loop
 !
 !  * Write diagnostic
 !
-  IF (.NOT.PRESENT(OWRITE_DIAG).OR.OWRITE_DIAG.OR.JTSTEP<ITSTEP) THEN
+  IF (GWRITE_DIAG.OR.JTSTEP<ITSTEP) THEN
     IF (LWR_DIAG.AND.MOD(PTIMEC,PTSTEP_DIAG)==0.) THEN
       KNB_TSTEP_DIAG = KNB_TSTEP_DIAG + 1
       CALL TRIP_DIAG_GATHER(TPLK, TPDG, TPST)
